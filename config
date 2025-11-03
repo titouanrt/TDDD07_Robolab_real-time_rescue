@@ -1,0 +1,8 @@
+# Group (Number and Port)
+LAB_GROUP=R4
+LAB_GROUP_PORT=40004
+
+# Robot (ID and IP)
+ROBOT_ID=4
+ROBOT_IP=192.168.1.140
+
