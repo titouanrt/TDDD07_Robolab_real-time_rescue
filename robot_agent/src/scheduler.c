@@ -142,12 +142,78 @@ void scheduler_run(scheduler_t *ces)
 	/* --- Write your code here --- */
 
 	/* --- Local variables (define variables here) --- */	
-	double time = 0;	
+			double time[7][20];	
+			int cycle = 0;
+
 	/* --- Set minor cycle period --- */	
-	//ces->minor = ...;	
+	ces->minor = 125;	
+	
 	/* --- Write your code here --- */	
-	scheduler_start(ces);	
-	timelib_timer_set(&(ces->tv_started));	
-	scheduler_exec_task(ces, s_TASK_MISSION_ID);	
-	time = timelib_timer_get(ces->tv_started);	printf("time : %f\n", time);
+	scheduler_start(ces);   
+	while (1)
+	{
+		switch (cycle)
+		{
+		case 125:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			break;
+
+		case 250:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			break;
+			
+		case 375:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			break;
+
+		case 500:
+			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			scheduler_exec_task(ces, s_TASK_MISSION_ID);
+			break;
+
+		case 625:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			break;
+
+		case 750:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			break;
+
+		case 875:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			break;
+
+		case 1000:
+			scheduler_exec_task(ces, s_TASK_NAVIGATE_ID);
+			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			scheduler_exec_task(ces, s_TASK_MISSION_ID);
+			cycle = 0;
+			break;
+		
+		default:
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			break;
+		}
+		cycle += 125;
+		scheduler_wait_for_timer(ces);
+
+
+
+	}
+	
+
 }
