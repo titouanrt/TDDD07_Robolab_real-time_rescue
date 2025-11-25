@@ -43,6 +43,51 @@ void task_communicate(void)
 		//	LAB 2 starts here
 		// --------------------------------------------------
 
+		doublylinkedlist_t *victim_list;
+		victim_list = doublylinkedlist_init();
+
+		doublylinkedlist_t *position_list;
+		position_list = doublylinkedlist_init();
+
+		doublylinkedlist_t *pheromone_list;
+		pheromone_list = doublylinkedlist_init();
+
+		doublylinkedlist_t *stream_list;
+		stream_list = doublylinkedlist_init();
+
+		int size = g_list_send->count;
+		doublylinkedlist_node_t *current = g_list_send->first;
+
+		// Separate data in different lists
+		while(size != 0)
+		{
+			// Allocate memory for data structure
+			switch(current->data_type)
+			{
+			// Robot pose
+			case s_DATA_STRUCT_TYPE_ROBOT :
+				data = (void *)malloc(sizeof(robot_t));
+				doublylinkedlist_insert_end(position_list, data, s_DATA_STRUCT_TYPE_ROBOT);
+				break;
+			// Victim information
+			case s_DATA_STRUCT_TYPE_VICTIM :
+				data = (void *)malloc(sizeof(victim_t));
+				doublylinkedlist_insert_end(victim_list, data, s_DATA_STRUCT_TYPE_VICTIM);
+				break;
+			// Pheromone map
+			case s_DATA_STRUCT_TYPE_PHEROMONE :
+				data = (void *)malloc(sizeof(pheromone_map_sector_t));
+				doublylinkedlist_insert_end(pheromone_list, data, s_DATA_STRUCT_TYPE_PHEROMONE);
+				break;
+			case s_DATA_STRUCT_TYPE_STREAM :
+				data = (void *)malloc(sizeof(stream_t));
+				doublylinkedlist_insert_end(stream_list, data, s_DATA_STRUCT_TYPE_STREAM);
+				break;
+			}
+			current = current->next;
+			doublylinkedlist_remove(g_list_send, current->prev, data, &data_type);
+			size--;
+		}
 
 		/* --- Send Data --- */
 		while(g_list_send->count != 0)
