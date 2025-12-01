@@ -2,7 +2,7 @@
 
 
 
-                    ORIGINAL TASK COMMUNICATE
+                    LAB 2 TASK COMMUNICATE
 
 
 
@@ -54,63 +54,122 @@ void task_communicate(void)
 		//	LAB 2 starts here
 		// --------------------------------------------------
 
+		doublylinkedlist_t *victim_list;
+		victim_list = doublylinkedlist_init();
 
-		/* --- Send Data --- */
-		while(g_list_send->count != 0)
+		doublylinkedlist_t *position_list;
+		position_list = doublylinkedlist_init();
+
+		doublylinkedlist_t *pheromone_list;
+		pheromone_list = doublylinkedlist_init();
+
+		doublylinkedlist_t *stream_list;
+		stream_list = doublylinkedlist_init();
+
+		int size = g_list_send->count;
+		doublylinkedlist_node_t *current = g_list_send->first;
+
+		doublylinkedlist_t *current_list; //list to send
+
+		int measure_flag = 0;
+		int send_exceed_flag = 0;
+
+		clock_t start_time, end_time; //time measurement for protecting overrun
+
+		// Separate data in different lists
+		while(size != 0)
 		{
-			seq++;
-
 			// Allocate memory for data structure
-			switch(g_list_send->first->data_type)
+			switch(current->data_type)
 			{
 			// Robot pose
 			case s_DATA_STRUCT_TYPE_ROBOT :
 				data = (void *)malloc(sizeof(robot_t));
+				doublylinkedlist_insert_end(position_list, data, s_DATA_STRUCT_TYPE_ROBOT);
 				break;
 			// Victim information
 			case s_DATA_STRUCT_TYPE_VICTIM :
 				data = (void *)malloc(sizeof(victim_t));
+				doublylinkedlist_insert_end(victim_list, data, s_DATA_STRUCT_TYPE_VICTIM);
 				break;
 			// Pheromone map
 			case s_DATA_STRUCT_TYPE_PHEROMONE :
 				data = (void *)malloc(sizeof(pheromone_map_sector_t));
+				doublylinkedlist_insert_end(pheromone_list, data, s_DATA_STRUCT_TYPE_PHEROMONE);
 				break;
-			// Command (for future use)
-			case s_DATA_STRUCT_TYPE_CMD :
-				data = (void *)malloc(sizeof(command_t));
-				break;
+			// Data stream
 			case s_DATA_STRUCT_TYPE_STREAM :
 				data = (void *)malloc(sizeof(stream_t));
-				break;
-			// Other
-			default :
-				// Do nothing
-				continue;
+				doublylinkedlist_insert_end(stream_list, data, s_DATA_STRUCT_TYPE_STREAM);
 				break;
 			}
-
-			// Get data from the list
-			doublylinkedlist_remove(g_list_send, g_list_send->first ,data, &data_type);
-
-			// Encode data into UDP packet
-			protocol_encode(udp_packet,
-					&udp_packet_len,
-					s_PROTOCOL_ADDR_BROADCAST,
-					g_config.robot_id,
-					g_config.robot_team,
-					s_PROTOCOL_TYPE_DATA,
-					seq,
-					g_message_sequence_id,
-					last_id,
-					data_type,
-					data);
-
-			// Broadcast packet
-			udp_broadcast(g_udps, udp_packet, udp_packet_len);
-
-			// Free memory
-			free(data);
+			current = current->next;
+			doublylinkedlist_remove(g_list_send, current->prev, data, &data_type);
+			size--;
 		}
+		start_time = clock();
+		/* --- Send Data --- */
+		for(int i = 0; i < 4; i++)
+		{
+			switch(i)
+			{
+			case 0:
+				current_list = victim_list;
+				measure_flag = 0;
+				break;
+			case 1:
+				current_list = position_list;
+				measure_flag = 0;
+				break;
+			case 2:
+				current_list = pheromone_list;
+				measure_flag = 1;
+				break;
+			case 3:
+				current_list = stream_list;
+				measure_flag = 1;
+				break;
+			}
+			while(current_list->count != 0 && send_exceed_flag == 0)
+			{
+				current = current_list->first;
+
+				seq++;
+
+				// Get data from the list
+				doublylinkedlist_remove(current_list, current ,data, &data_type);
+
+				// Encode data into UDP packet
+				protocol_encode(udp_packet,
+						&udp_packet_len,
+						s_PROTOCOL_ADDR_BROADCAST,
+						g_config.robot_id,
+						g_config.robot_team,
+						s_PROTOCOL_TYPE_DATA,
+						seq,
+						g_message_sequence_id,
+						last_id,
+						data_type,
+						data);
+
+				// Broadcast packet
+				udp_broadcast(g_udps, udp_packet, udp_packet_len);
+
+				// Free memory
+				free(data);
+				if(measure_flag == 1)
+				{
+					end_time = clock();
+					double time_taken = ((double)(end_time - start_time))/CLOCKS_PER_SEC*1000; // in milliseconds
+					if(time_taken > 80)
+					{
+						debug_printf("COMMUNICATE TASK: Sending data is too slow: %f milliseconds\n",time_taken);
+						send_exceed_flag = 1;
+					}
+				}
+			}
+		}
+		
 
 
 

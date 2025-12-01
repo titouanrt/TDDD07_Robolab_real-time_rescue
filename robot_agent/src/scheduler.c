@@ -158,29 +158,29 @@ void scheduler_run(scheduler_t *ces)
 		{
 		case 125:
 			start = clock();
-			printf("125 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("125 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			//printf("125 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("125 stop : %f\n", timelib_timer_reset(ces));
 
 			break;
 
 		case 250:
-			printf("250 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("250 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			// scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
-			//printf("250 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("250 stop : %f\n", timelib_timer_reset(ces));
 			break;
 			
 		case 375:
-			printf("375 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("375 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			//printf("375 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("375 stop : %f\n", timelib_timer_reset(ces));
 			break;
 
 		case 500:
-			printf("500 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("500 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_NAVIGATE_ID);
 			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
@@ -188,32 +188,32 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			// scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_MISSION_ID);
-			//printf("500 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("500 stop : %f\n", timelib_timer_reset(ces));
 			break;
 
 		case 625:
-			printf("625 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("625 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			//printf("625 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("625 stop : %f\n", timelib_timer_reset(ces));
 			break;
 
 		case 750:
-			printf("750 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("750 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			// scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
-			//printf("750 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			//scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			printf("750 stop : %f\n", timelib_timer_reset(ces));
 			break;
 
 		case 875:
-			printf("875 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("875 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			//printf("875 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("875 stop : %f\n", timelib_timer_reset(ces));
 			break;
 
 		case 1000:
-			printf("1000 start : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("1000 start : %f\n", timelib_timer_reset(ces));
 			scheduler_exec_task(ces, s_TASK_NAVIGATE_ID);
 			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
@@ -221,8 +221,7 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			scheduler_exec_task(ces, s_TASK_MISSION_ID);
 			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
-			
-			//printf("1000 stop : %f\n", timelib_timer_get(ces->tv_cycle));
+			printf("1000 stop : %f\n", timelib_timer_reset(ces));
 			timelib_timer_reset(&ces->tv_cycle);
 			cycle = 0;
 			break;
