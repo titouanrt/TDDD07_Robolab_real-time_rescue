@@ -19,6 +19,9 @@
 #include "task.h"
 #include "timelib.h"
 
+/* -- Globql vqriqbles -- */
+int cycle = 0;
+
 /* -- Defines -- */
 
 /* -- Functions -- */
@@ -66,10 +69,11 @@ void scheduler_start(scheduler_t *ces)
  */
 void scheduler_wait_for_timer(scheduler_t *ces)
 {
-	int sleep_time; // Sleep time in microseconds
+	int sleep_time, exec_time; // Sleep time in microseconds
 
 	// Calculate time till end of the minor cycle
-	sleep_time = (ces->minor * 1000) - (int)(timelib_timer_get(ces->tv_cycle) * 1000);
+	exec_time = (int)(timelib_timer_get(ces->tv_cycle) * 1000);
+	sleep_time = (ces->minor * 1000) - exec_time;
 
 	// Add minor cycle period to timer
 	timelib_timer_add_ms(&ces->tv_cycle, ces->minor);
@@ -79,6 +83,12 @@ void scheduler_wait_for_timer(scheduler_t *ces)
 	{
 		// Go to sleep (multipy with 1000 to get miliseconds)
 		usleep(sleep_time);
+		printf("%d minor cycle func exec: %d ms\n", cycle, exec_time / 1000);
+	}
+	else
+	{
+		// Overrun occurred
+		printf("Scheduler overrun: %d us\n", -sleep_time);
 	}
 }
 
@@ -143,30 +153,33 @@ void scheduler_run(scheduler_t *ces)
 
 	/* --- Local variables (define variables here) --- */	
 			double time[7][20];	
-			int cycle = 0;
 
 	/* --- Set minor cycle period --- */	
 	ces->minor = 125;	
 	
 	/* --- Write your code here --- */	
-	scheduler_start(ces);   
+	scheduler_start(ces);  
+	timelib_timer_set(&ces->tv_cycle); 
 	while (1)
 	{
 		switch (cycle)
 		{
 		case 125:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 250:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			break;
 			
 		case 375:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 500:
@@ -174,23 +187,25 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_MISSION_ID);
 			break;
 
 		case 625:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 750:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			break;
 
 		case 875:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
+			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 1000:
@@ -208,8 +223,8 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			break;
 		}
-		cycle += 125;
 		scheduler_wait_for_timer(ces);
+		cycle += 125;
 
 
 

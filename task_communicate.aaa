@@ -30,7 +30,6 @@
  */
 void task_communicate(void)
 {
-	printf("eho\n");
 	// Check if task is enabled
 	if(g_task_communicate.enabled == s_TRUE)
 	{
@@ -49,7 +48,7 @@ void task_communicate(void)
 		int seq = 0; // Massi thing
 		//In principle I want to send all the data in the buffer
 		int last_id = g_list_send->count; // Massi thing
-		printf("eho\n");
+
 
 		// --------------------------------------------------
 		//	LAB 2 starts here
@@ -76,90 +75,69 @@ void task_communicate(void)
 		int send_exceed_flag = 0;
 
 		clock_t start_time, end_time; //time measurement for protecting overrun
-		printf("eho\n");
 
 		// Separate data in different lists
 		while(size != 0)
 		{
-			printf("eho\n");
 			// Allocate memory for data structure
 			switch(current->data_type)
 			{
 			// Robot pose
 			case s_DATA_STRUCT_TYPE_ROBOT :
-				printf("robot\n");
 				data = (void *)malloc(sizeof(robot_t));
 				doublylinkedlist_insert_end(position_list, data, s_DATA_STRUCT_TYPE_ROBOT);
 				break;
 			// Victim information
 			case s_DATA_STRUCT_TYPE_VICTIM :
-				printf("victim\n");
 				data = (void *)malloc(sizeof(victim_t));
 				doublylinkedlist_insert_end(victim_list, data, s_DATA_STRUCT_TYPE_VICTIM);
 				break;
 			// Pheromone map
 			case s_DATA_STRUCT_TYPE_PHEROMONE :
-				printf("pheromone\n");
 				data = (void *)malloc(sizeof(pheromone_map_sector_t));
 				doublylinkedlist_insert_end(pheromone_list, data, s_DATA_STRUCT_TYPE_PHEROMONE);
 				break;
 			// Data stream
 			case s_DATA_STRUCT_TYPE_STREAM :
-				printf("stream\n");
 				data = (void *)malloc(sizeof(stream_t));
 				doublylinkedlist_insert_end(stream_list, data, s_DATA_STRUCT_TYPE_STREAM);
 				break;
 			}
-
-			if (current->next == NULL){
-				break;
-			}
-			
 			current = current->next;
 			doublylinkedlist_remove(g_list_send, current->prev, data, &data_type);
 			size--;
 		}
-
-		printf("sortie du while premier while \n");
-
 		start_time = clock();
 		/* --- Send Data --- */
 		for(int i = 0; i < 4; i++)
 		{
-			printf("dans le for %d \n", i);
 			switch(i)
 			{
 			case 0:
 				current_list = victim_list;
-				data_type = s_DATA_STRUCT_TYPE_VICTIM;
 				measure_flag = 0;
 				break;
 			case 1:
 				current_list = position_list;
-				data_type = s_DATA_STRUCT_TYPE_ROBOT;
 				measure_flag = 0;
 				break;
 			case 2:
 				current_list = pheromone_list;
-				data_type = s_DATA_STRUCT_TYPE_PHEROMONE;
 				measure_flag = 1;
 				break;
 			case 3:
 				current_list = stream_list;
-				data_type = s_DATA_STRUCT_TYPE_STREAM;
 				measure_flag = 1;
 				break;
 			}
 			while(current_list->count != 0 && send_exceed_flag == 0)
 			{
 				current = current_list->first;
-				printf("while\n");
+
 				seq++;
 
 				// Get data from the list
 				doublylinkedlist_remove(current_list, current ,data, &data_type);
-
-				printf("after remove\n");
 
 				// Encode data into UDP packet
 				protocol_encode(udp_packet,
@@ -173,16 +151,12 @@ void task_communicate(void)
 						last_id,
 						data_type,
 						data);
-				printf("after encode\n");
 
 				// Broadcast packet
 				udp_broadcast(g_udps, udp_packet, udp_packet_len);
 
-				printf("after broadcast\n");
 				// Free memory
 				free(data);
-				printf("after free\n");
-
 				if(measure_flag == 1)
 				{
 					end_time = clock();
@@ -194,12 +168,8 @@ void task_communicate(void)
 					}
 				}
 			}
-			printf("sortie du while %d \n", i);
 		}
-		doublylinkedlist_destroy(victim_list);
-		doublylinkedlist_destroy(position_list);
-		doublylinkedlist_destroy(pheromone_list);
-		doublylinkedlist_destroy(stream_list);
+		
 
 
 
