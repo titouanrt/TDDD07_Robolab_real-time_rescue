@@ -160,14 +160,16 @@ void scheduler_run(scheduler_t *ces)
 	/* --- Write your code here --- */	
 	scheduler_start(ces);  
 	timelib_timer_set(&ces->tv_cycle); 
+	scheduler_wait_for_timer(ces);
+
 	while (1)
 	{
 		switch (cycle)
 		{
 		case 125:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+
 			break;
 
 		case 250:
@@ -178,8 +180,6 @@ void scheduler_run(scheduler_t *ces)
 			
 		case 375:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 500:
@@ -192,8 +192,6 @@ void scheduler_run(scheduler_t *ces)
 
 		case 625:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 750:
@@ -204,8 +202,6 @@ void scheduler_run(scheduler_t *ces)
 
 		case 875:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
 			break;
 
 		case 1000:
@@ -214,7 +210,6 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
 			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_MISSION_ID);
 			cycle = 0;
 			break;
