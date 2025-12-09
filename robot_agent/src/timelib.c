@@ -76,7 +76,7 @@ double timelib_timer_reset(struct timeval *tv)
 	*tv = tv_now;
 
 	// Check error!!!
-
+	
 	return time_elapsed;
 }
 
