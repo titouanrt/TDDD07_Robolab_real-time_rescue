@@ -19,9 +19,6 @@
 #include "task.h"
 #include "timelib.h"
 
-/* -- Globql vqriqbles -- */
-int cycle = 0;
-
 /* -- Defines -- */
 
 /* -- Functions -- */
@@ -34,7 +31,7 @@ int cycle = 0;
 scheduler_t *scheduler_init(void)
 {
 	// Allocate memory for Scheduler structure
-	scheduler_t *ces = (scheduler_t *) malloc(sizeof(scheduler_t));
+	scheduler_t *ces = (scheduler_t *)malloc(sizeof(scheduler_t));
 
 	return ces;
 }
@@ -69,26 +66,19 @@ void scheduler_start(scheduler_t *ces)
  */
 void scheduler_wait_for_timer(scheduler_t *ces)
 {
-	int sleep_time, exec_time; // Sleep time in microseconds
+	int sleep_time; // Sleep time in microseconds
 
 	// Calculate time till end of the minor cycle
-	exec_time = (int)(timelib_timer_get(ces->tv_cycle) * 1000);
-	sleep_time = (ces->minor * 1000) - exec_time;
+	sleep_time = (ces->minor * 1000) - (int)(timelib_timer_get(ces->tv_cycle) * 1000);
 
 	// Add minor cycle period to timer
 	timelib_timer_add_ms(&ces->tv_cycle, ces->minor);
 
 	// Check for overrun and execute sleep only if there is no
-	if(sleep_time > 0)
+	if (sleep_time > 0)
 	{
 		// Go to sleep (multipy with 1000 to get miliseconds)
 		usleep(sleep_time);
-		printf("%d minor cycle func exec: %d ms\n", cycle, exec_time / 1000);
-	}
-	else
-	{
-		// Overrun occurred
-		printf("Scheduler overrun: %d us\n", -sleep_time);
 	}
 }
 
@@ -100,38 +90,38 @@ void scheduler_wait_for_timer(scheduler_t *ces)
  */
 void scheduler_exec_task(scheduler_t *ces, int task_id)
 {
-	switch(task_id)
+	switch (task_id)
 	{
 	// Mission
-	case s_TASK_MISSION_ID :
+	case s_TASK_MISSION_ID:
 		task_mission();
 		break;
 	// Navigate
-	case s_TASK_NAVIGATE_ID :
+	case s_TASK_NAVIGATE_ID:
 		task_navigate();
 		break;
 	// Control
-	case s_TASK_CONTROL_ID :
+	case s_TASK_CONTROL_ID:
 		task_control();
 		break;
 	// Refine
-	case s_TASK_REFINE_ID :
+	case s_TASK_REFINE_ID:
 		task_refine();
 		break;
 	// Report
-	case s_TASK_REPORT_ID :
+	case s_TASK_REPORT_ID:
 		task_report();
 		break;
 	// Communicate
-	case s_TASK_COMMUNICATE_ID :
+	case s_TASK_COMMUNICATE_ID:
 		task_communicate();
 		break;
 	// Collision detection
-	case s_TASK_AVOID_ID :
+	case s_TASK_AVOID_ID:
 		task_avoid();
 		break;
 	// Other
-	default :
+	default:
 		// Do nothing
 		break;
 	}
@@ -147,83 +137,91 @@ void scheduler_run(scheduler_t *ces)
 	/* --- Local variables (define variables here) --- */
 
 	/* --- Set minor cycle period --- */
-	//ces->minor = ...;
+	// ces->minor = ...;
 
 	/* --- Write your code here --- */
 
-	/* --- Local variables (define variables here) --- */	
-			double time[7][20];	
+	/* --- Local variables (define variables here) --- */
+	double time[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	int cycle = 0;
+	int cpt = 0;
+	/* --- Set minor cycle period --- */
+	ces->minor = 125;
 
-	/* --- Set minor cycle period --- */	
-	ces->minor = 125;	
-	
-	/* --- Write your code here --- */	
-	scheduler_start(ces);  
-	timelib_timer_set(&ces->tv_cycle); 
-	scheduler_wait_for_timer(ces);
-
+	/* --- Write your code here --- */
+	scheduler_start(ces);
+	timelib_timer_set(&ces->tv_cycle);
 	while (1)
 	{
 		switch (cycle)
 		{
-		case 125:
+		case 0:
+			if (g_config.robot_id == 1)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID);
+			scheduler_exec_task(ces, s_TASK_REPORT_ID);
+			break;
 
+		case 125:
+			if (g_config.robot_id == 2)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_MISSION_ID);
 			break;
 
 		case 250:
+			if (g_config.robot_id == 3)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_REFINE_ID);
+			scheduler_exec_task(ces, s_TASK_REPORT_ID);
 			break;
-			
+
 		case 375:
+			if (g_config.robot_id == 4)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			break;
 
 		case 500:
-			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
+			if (g_config.robot_id == 5)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_MISSION_ID);
+			scheduler_exec_task(ces, s_TASK_REFINE_ID);
+			scheduler_exec_task(ces, s_TASK_REPORT_ID);
 			break;
 
 		case 625:
+			if (g_config.robot_id == 6)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
+			scheduler_exec_task(ces, s_TASK_MISSION_ID);
 			break;
 
 		case 750:
+			if (g_config.robot_id == 7)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
+			scheduler_exec_task(ces, s_TASK_REFINE_ID);
+			scheduler_exec_task(ces, s_TASK_REPORT_ID);
 			break;
 
 		case 875:
-			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			break;
-
-		case 1000:
+			if (g_config.robot_id == 8)
+				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
 			scheduler_exec_task(ces, s_TASK_NAVIGATE_ID);
 			scheduler_exec_task(ces, s_TASK_CONTROL_ID);
-			scheduler_exec_task(ces, s_TASK_AVOID_ID);
-			scheduler_exec_task(ces, s_TASK_REFINE_ID); 
-			scheduler_exec_task(ces, s_TASK_REPORT_ID); 
-			scheduler_exec_task(ces, s_TASK_MISSION_ID);
-			cycle = 0;
-			break;
-		
-		default:
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			break;
 		}
 		scheduler_wait_for_timer(ces);
+
 		cycle += 125;
-
-
-
+		if (cycle >= 1000)
+		{
+			cycle = 0;
+		}
 	}
-	
-
 }

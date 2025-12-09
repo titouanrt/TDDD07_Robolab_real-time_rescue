@@ -34,9 +34,7 @@
 void task_communicate(void)
 {
 
-	        clock_t start_time = clock();
-	struct timeval begin;
-	timelib_timer_set(&begin);
+	int bit_sent = 0;
     printf("eho\n");
     // Check if task is enabled
     if(g_task_communicate.enabled == s_TRUE)
@@ -103,7 +101,7 @@ void task_communicate(void)
                     break;
             }
 
-            free(data);
+            //free(data);
         }
 
         // send data
@@ -113,24 +111,17 @@ void task_communicate(void)
 
         doublylinkedlist_t* lists[] = {victim_list, position_list, pheromone_list, stream_list};
         int types[] = {s_DATA_STRUCT_TYPE_VICTIM, s_DATA_STRUCT_TYPE_ROBOT, s_DATA_STRUCT_TYPE_PHEROMONE, s_DATA_STRUCT_TYPE_STREAM};
+		int nb_msg_sent[4] = {0, 0, 0, 0};
 
         for(int i = 0; i < 4; i++)
         {
             current_list = lists[i];
+			int list_size = current_list->count;
             // Victim/Locqtion = prioritaire 0, others = 1
 			if(i>=2) measure_flag = 1;
             while(current_list->count != 0)
             {
-                // Vérification du temps (seulement pour Pheromone et Stream)
-                if(measure_flag == 1 && send_exceed_flag == 0) {
-                     //double time_taken = ((double)(clock() - start_time) / CLOCKS_PER_SEC) * 1000.0;
-					 double time_v = timelib_timer_get(begin);
-					 printf("communicqte %.2f \n", time_v);
-                     if(time_v > 10.0) { // limit of time for the communicate task
-                         debug_printf("Time Limit Reached\n");
-                         send_exceed_flag = 1;
-                     }
-                }
+
 
                 doublylinkedlist_node_t *current = current_list->first;
                 
@@ -168,7 +159,18 @@ void task_communicate(void)
                 udp_broadcast(g_udps, udp_packet, udp_packet_len);
 
                 free(data);
+				nb_msg_sent[i]++;
+				// Vérification du temps (seulement pour Pheromone et Stream)
+                if(measure_flag == 1 && send_exceed_flag == 0) {
+					bit_sent += udp_packet_len * 8;
+					
+					if(bit_sent + sizeof(stream_t) > 19200) {
+						send_exceed_flag = 1;
+						break;
+					}
+                }
             }
+			printf("COMMUNICATE: sent %d  messages of type %d out of %d\n",nb_msg_sent[i],types[i], list_size);
             doublylinkedlist_destroy(current_list);
         }
 
