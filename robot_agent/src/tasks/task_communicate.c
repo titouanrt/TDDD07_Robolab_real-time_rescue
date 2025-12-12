@@ -33,7 +33,6 @@
  */
 void task_communicate(void)
 {
-
 	int bit_sent = 0;
     printf("eho\n");
     // Check if task is enabled
@@ -156,7 +155,7 @@ void task_communicate(void)
                         g_config.robot_id, g_config.robot_team, s_PROTOCOL_TYPE_DATA,
                         seq, g_message_sequence_id, last_id, data_type, data);
 
-                udp_broadcast(g_udps, udp_packet, udp_packet_len);
+                udp_broadcast(g_udps, udp_packet, udp_packet_len); 
 
                 free(data);
 				nb_msg_sent[i]++;
@@ -164,7 +163,7 @@ void task_communicate(void)
                 if(measure_flag == 1 && send_exceed_flag == 0) {
 					bit_sent += udp_packet_len * 8;
 					
-					if(bit_sent + sizeof(stream_t) > 19200) {
+					if(bit_sent + sizeof(stream_t) > 19200) { //
 						send_exceed_flag = 1;
 						break;
 					}
