@@ -149,15 +149,29 @@ void scheduler_run(scheduler_t *ces)
 	ces->minor = 125;
 
 	/* --- Write your code here --- */
+	struct timeval current_time;
+	long time_to_wait_us;
+
+	//wait for an entire second
+	gettimeofday(&current_time, NULL);
+	time_to_wait_us = 1000000 - current_time.tv_usec;
+
+	if (time_to_wait_us > 0 && time_to_wait_us < 1000000)
+	{
+		usleep(time_to_wait_us);
+	}
+	
 	scheduler_start(ces);
 	timelib_timer_set(&ces->tv_cycle);
+
 	while (1)
 	{
 		switch (cycle)
 		{
 		case 0:
-			if (g_config.robot_id == 1)
+			if (g_config.robot_id == 1) {
 				scheduler_exec_task(ces, s_TASK_COMMUNICATE_ID);
+			}
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			scheduler_exec_task(ces, s_TASK_REFINE_ID);
 			scheduler_exec_task(ces, s_TASK_REPORT_ID);
@@ -216,9 +230,14 @@ void scheduler_run(scheduler_t *ces)
 			scheduler_exec_task(ces, s_TASK_AVOID_ID);
 			break;
 		}
+
+		//wait for the next minor cycle
 		scheduler_wait_for_timer(ces);
 
+		//next minor cycle
 		cycle += 125;
+
+		//go to the first minor cycle
 		if (cycle >= 1000)
 		{
 			cycle = 0;
